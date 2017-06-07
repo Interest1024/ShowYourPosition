@@ -1,0 +1,145 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head>
+
+<body>
+    
+	<p id="demo">Click button My Position to get your position. Click button Sent Position to log your position in server.</p>
+	<button onclick="getLocation()">My Position</button>
+	<!--p id = "latlon"></p-->
+	<button onclick="sendPosition()">Sent Position</button>
+	
+	<div id="mapholder"></div>
+	
+<script>
+	//User instruction and error are displayed in this area.  
+	var x=document.getElementById("demo");
+	//The latitude of a user.
+	var lat;
+	//The longitude of a user.
+	var lon;
+	
+	/*
+	* Get a user's latitude and longitude and show a mark in Google Map.
+	* Call showPosition to show the location of a user in a Google Map.
+	* Call showError to show error information, if there is.
+	* This function will be called when button My Position is pressed. 
+	*/	
+	function getLocation()
+  	{
+  		if (navigator.geolocation)
+    	{
+    		navigator.geolocation.getCurrentPosition(showPosition,showError);
+    	}
+  		else
+  		{
+  			x.innerHTML="Geolocation is not supported by this browser.";
+  		}
+  	}
+
+	/*
+	* Show a user's location in a Google Map.
+	*/	
+	function showPosition(position)
+  	{
+  		//var latlon = document.getElementById("latlon");
+  		
+  		lat=position.coords.latitude;
+  		lon=position.coords.longitude;
+  		//latlon.innerHTML = "Latitude: "+lat+", Longitude: "+lon;
+  		//sentPosition(lat,lon);
+
+ 	 	latlon=new google.maps.LatLng(lat, lon)
+  		mapholder=document.getElementById('mapholder')
+  		mapholder.style.height='90%'; //'250px';
+  		mapholder.style.width='100%'; //'500px';
+
+  		var myOptions={
+  			center:latlon,zoom:14,
+  			mapTypeId:google.maps.MapTypeId.ROADMAP,
+  			mapTypeControl:false,
+  			navigationControlOptions:{style:google.maps.NavigationControlStyle.SMALL}
+  		};
+  		var map=new google.maps.Map(document.getElementById("mapholder"),myOptions);
+  		var marker=new google.maps.Marker({position:latlon,map:map,title:"You are here!"});
+  	}
+
+	/*
+	* Show error information when calling Google Map API.
+	*/
+	function showError(error)
+  	{
+  		switch(error.code) 
+    	{
+    		case error.PERMISSION_DENIED:
+      			x.innerHTML="User denied the request for Geolocation."
+      			break;
+    		case error.POSITION_UNAVAILABLE:
+      			x.innerHTML="Location information is unavailable."
+      			break;
+    		case error.TIMEOUT:
+      			x.innerHTML="The request to get user location timed out."
+      			break;
+    		case error.UNKNOWN_ERROR:
+      			x.innerHTML="An unknown error occurred."
+      			break;
+    	}
+  	}
+  	
+  	/*
+  	* Get a XMLHttpRequest, which will be used in POST request.
+  	* This function is called by sendPosition().
+  	*/
+  	function getXMLRequestObject() 
+  	{
+            if(window.XMLHttpRequest) {
+                return new XMLHttpRequest();
+            } else if(window.ActiveXObject) {
+                return new ActiveXObject("Microsoft.XMLHTTP");
+            } else {
+                alert("Your Browser does not support AJAX!! .Upgrade to latest version");
+            }
+    }
+    
+  	/*
+  	* Send a POST request including latitude and longitude in the format "latitude,longitude".
+  	* This function is called when the button Send Position is pressed.
+  	*/
+    function sendPosition(){
+    	if(lat == null || lon == null){
+    		alert("Before sending your position, please click button: My Position to get your position.");
+    		return;
+    	}
+    
+		var uri = "$requesturi";
+
+		var xhr = getXMLRequestObject();//new XMLHttpRequest();
+		xhr.open('POST', uri, true);
+		//xhr.setRequestHeader("Accept", "application/json");
+		xhr.send(lat+","+lon);
+		xhr.onreadystatechange = function () {
+    		//4: connected successfully
+    		var completed = 4;
+    		if (xhr.readyState === completed) {
+        		if (xhr.status === 200) {
+        			//200: success
+            		//alert(xhr.responseText);
+        	} 
+        	else 
+        	{
+        		//error when connecting
+            	alert('error!');
+            	console.log(xhr.responseText);
+        	}
+        }
+        };        
+    }
+  	
+  	
+</script>
+
+	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAA_BdcwhBLOk6CTko1qPlaTRChMTORQa8&callback=initMap"  async defer></script>
+
+</body>
+</html>
